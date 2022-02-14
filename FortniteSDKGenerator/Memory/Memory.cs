@@ -22,29 +22,29 @@ namespace FortniteSDKGenerator
         private static IntPtr HandleInternal;
         private static SigScan? SigScanInternal;
 
-        private delegate IntPtr OpenProcessDelegate(uint processAccess, bool bInheritHandle, int processId);
-        private static OpenProcessDelegate OpenProcess;
+        public delegate IntPtr OpenProcessDelegate(uint processAccess, bool bInheritHandle, int processId);
+        public static OpenProcessDelegate OpenProcess;
 
-        private delegate bool ReadProcessMemoryDelegate(IntPtr hProcess, UInt64 lpBaseAddress, byte[] lpBuffer, int dwSize, out UInt32 lpNumberOfBytesRead);
-        private static ReadProcessMemoryDelegate ReadProcessMemory;
+        public delegate bool ReadProcessMemoryDelegate(IntPtr hProcess, UInt64 lpBaseAddress, byte[] lpBuffer, int dwSize, out UInt32 lpNumberOfBytesRead);
+        public static ReadProcessMemoryDelegate ReadProcessMemory;
 
-        private delegate bool WriteProcessMemoryDelegate(IntPtr hProcess, UInt64 lpBaseAddress, byte[] buffer, int nSize, out UInt32 lpNumberOfBytesWritten);
-        private static WriteProcessMemoryDelegate WriteProcessMemory;
+        public delegate bool WriteProcessMemoryDelegate(IntPtr hProcess, UInt64 lpBaseAddress, byte[] buffer, int nSize, out UInt32 lpNumberOfBytesWritten);
+        public static WriteProcessMemoryDelegate WriteProcessMemory;
 
-        private delegate UInt64 VirtualAllocExDelegate(IntPtr hProcess, IntPtr lpAddress, Int32 dwSize, Int32 flAllocationType, Int32 flProtect);
-        private static VirtualAllocExDelegate VirtualAllocEx;
+        public delegate UInt64 VirtualAllocExDelegate(IntPtr hProcess, IntPtr lpAddress, Int32 dwSize, Int32 flAllocationType, Int32 flProtect);
+        public static VirtualAllocExDelegate VirtualAllocEx;
 
-        private delegate bool VirtualFreeExDelegate(IntPtr hProcess, IntPtr lpAddress, Int32 dwSize, Int32 dwFreeType);
-        private static VirtualFreeExDelegate VirtualFreeEx;
+        public delegate bool VirtualFreeExDelegate(IntPtr hProcess, IntPtr lpAddress, Int32 dwSize, Int32 dwFreeType);
+        public static VirtualFreeExDelegate VirtualFreeEx;
 
-        private delegate UInt64 CreateRemoteThreadDelegate(IntPtr hProcess, IntPtr lpThreadAttributes, UInt32 dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, UInt32 dwCreationFlags, IntPtr lpThreadId);
-        private static CreateRemoteThreadDelegate CreateRemoteThread;
+        public delegate UInt64 CreateRemoteThreadDelegate(IntPtr hProcess, IntPtr lpThreadAttributes, UInt32 dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, UInt32 dwCreationFlags, IntPtr lpThreadId);
+        public static CreateRemoteThreadDelegate CreateRemoteThread;
 
-        private delegate UInt32 WaitForSingleObjectDelegate(IntPtr hHandle, UInt32 dwMilliseconds);
-        private static WaitForSingleObjectDelegate WaitForSingleObject;
+        public delegate UInt32 WaitForSingleObjectDelegate(IntPtr hHandle, UInt32 dwMilliseconds);
+        public static WaitForSingleObjectDelegate WaitForSingleObject;
 
-        private delegate Int32 CloseHandleDelegate(IntPtr hHandle);
-        private static CloseHandleDelegate CloseHandle;
+        public delegate Int32 CloseHandleDelegate(IntPtr hHandle);
+        public static CloseHandleDelegate CloseHandle;
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -88,9 +88,17 @@ namespace FortniteSDKGenerator
         public static UInt64 GetBaseAddress() => 
             (UInt64)ProcessInternal.MainModule.BaseAddress;
 
+        public static IntPtr GetHandle() => 
+            HandleInternal;
+
         public static T Read<T>(UInt64 Address)
         {
             var type = typeof(T);
+
+            if (type == typeof(MemoryObject))
+            {
+                return (T)(Object)new MemoryObject(Address);
+            }
 
             var Buffer = ReadMemory(Address, Marshal.SizeOf<T>());
             var structPtr = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
