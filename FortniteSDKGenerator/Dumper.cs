@@ -27,7 +27,9 @@ namespace FortniteSDKGenerator
             var Name = GetObjectName(Package);
             Log.Information("Dumping Package {PackageName}", Name);
 
-            File.WriteAllText("SDK.hpp", File.ReadAllText("SDK.hpp") + $"#include \"SDK/FN_{Name}.hpp\"\n");
+            File.AppendAllText("SDK.hpp", $"#include \"SDK/FN_{Name}.hpp\"\n");
+
+
 
             foreach (var Class in Classes)
             {
