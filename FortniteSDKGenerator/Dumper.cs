@@ -4,40 +4,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FortniteSDKGenerator.Globals;
 
 namespace FortniteSDKGenerator
 {
     class Dumper
     {
-        static String GetObjectName(IntPtr Object)
+        public static String GetObjectName(IntPtr Object)
         {
-            var FStringAddr = Memory.VirtualAllocEx(Memory.GetHandle(), IntPtr.Zero, 16, 0x00001000, 0x0040);
+            var ComparisonIndex = Memory.Read<Int32>((UInt64)Object + 0x18);
 
-            Memory.Execute(Memory.GetBaseAddress() + 0xC79B10, (UInt64)Object + 0x18, (UInt64)FStringAddr, 0, 0);
+            if (GNameCache.ContainsKey(ComparisonIndex))
+                return GNameCache[ComparisonIndex];
 
-            var Str = Encoding.Unicode.GetString(Memory.ReadMemory(Memory.Read<UInt64>(FStringAddr), Memory.Read<Int32>(FStringAddr + 8) * 2));
+            var Name = GNames.GetByIndex(ComparisonIndex).GetAnsiName();
+            GNameCache.Add(ComparisonIndex, Name);
 
-            Memory.VirtualFreeEx(Memory.GetHandle(), (IntPtr)FStringAddr, 0, 0x8000);
-
-            return Str.TrimEnd('\0');
+            return Name;
         }
 
-        public static void ProcessPackage(IntPtr Package, List<IntPtr> Classes)
+        public static void ProcessPackage(IntPtr Package, List<IntPtr> Children)
         {
             var Name = GetObjectName(Package);
-            Log.Information("Dumping Package {PackageName}", Name);
+            Log.Information("Dumping Package {PackageName}", Name.Split('/')[Name.Split('/').Length - 1]);
 
             File.AppendAllText("SDK.hpp", $"#include \"SDK/FN_{Name}.hpp\"\n");
 
-
-
-            foreach (var Class in Classes)
+            foreach (var Child in Children)
             {
-                
+
             }
         }
 
-        public static void Dump(TUObjectArray GObjects)
+        public static void Initialize(TUObjectArray InGObjects, TNameEntryArray InGNames)
+        {
+            GNames = InGNames;
+            GObjects = InGObjects;
+        }
+
+        public static void Dump()
         {
             if (File.Exists("SDK.hpp"))
                 File.Delete("SDK.hpp");
@@ -46,11 +51,8 @@ namespace FortniteSDKGenerator
 
             var Packages = new Dictionary<IntPtr, List<IntPtr>>();
 
-            var NumElements = GObjects.NumElements;
-            IntPtr LastPackage = IntPtr.Zero;
-            for (int i = 0; i < NumElements; i++)
+            foreach (var Object in (List<IntPtr>)GObjects)
             {
-                var Object = GObjects.GetByIndex(i);
                 IntPtr Package = Object;
 
                 while (true)
@@ -61,11 +63,9 @@ namespace FortniteSDKGenerator
                     Package = TempOuter;
                 }
 
-                if (!Packages.ContainsKey(Package)) Packages.Add(Package, new List<IntPtr>());
+                if (!Packages.Keys.Contains(Package))
+                    Packages.Add(Package, new List<IntPtr>());
                 Packages[Package].Add(Object);
-
-                if (i == 1000)
-                    break;
             }
 
             foreach (var Package in Packages)

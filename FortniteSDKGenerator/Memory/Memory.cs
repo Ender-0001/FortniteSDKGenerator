@@ -91,13 +91,29 @@ namespace FortniteSDKGenerator
         public static IntPtr GetHandle() => 
             HandleInternal;
 
+        public static int StringReadLen = 1024;
+
         public static T Read<T>(UInt64 Address)
         {
             var type = typeof(T);
 
-            if (type == typeof(MemoryObject))
+            if (type == typeof(String))
             {
-                return (T)(Object)new MemoryObject(Address);
+                var Bytes = Memory.ReadMemory(Address, StringReadLen);
+                String Res = String.Empty;
+                foreach (var Byte in Bytes)
+                {
+                    if (Byte == 0)
+                        break;
+                    Res += (char)Byte;
+                }
+
+                return (T)(Object)Res;
+            }
+
+            if (type.IsAssignableTo(typeof(MemoryObject)))
+            {
+                return (T)(Object)Activator.CreateInstance(type, Address);
             }
 
             var Buffer = ReadMemory(Address, Marshal.SizeOf<T>());
