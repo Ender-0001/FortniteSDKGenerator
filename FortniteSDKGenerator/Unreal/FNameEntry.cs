@@ -9,7 +9,8 @@ namespace FortniteSDKGenerator
     class FNameEntry : MemoryObject
     {
         public FNameEntry(ulong InAddress) : base(InAddress)
-        {}
+        {
+        }
 
         public Int32 Index => Read<Int32>(0);
         public FNameEntry HashNext => Read<FNameEntry>(8);

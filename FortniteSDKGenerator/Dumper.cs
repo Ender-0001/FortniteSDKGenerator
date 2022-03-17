@@ -10,29 +10,16 @@ namespace FortniteSDKGenerator
 {
     class Dumper
     {
-        public static String GetObjectName(IntPtr Object)
+        public static void ProcessPackage(UObject Package, List<UObject> Children)
         {
-            var ComparisonIndex = Memory.Read<Int32>((UInt64)Object + 0x18);
-
-            if (GNameCache.ContainsKey(ComparisonIndex))
-                return GNameCache[ComparisonIndex];
-
-            var Name = GNames.GetByIndex(ComparisonIndex).GetAnsiName();
-            GNameCache.Add(ComparisonIndex, Name);
-
-            return Name;
-        }
-
-        public static void ProcessPackage(IntPtr Package, List<IntPtr> Children)
-        {
-            var Name = GetObjectName(Package);
+            var Name = Package.GetName();
             Log.Information("Dumping Package {PackageName}", Name.Split('/')[Name.Split('/').Length - 1]);
 
             File.AppendAllText("SDK.hpp", $"#include \"SDK/FN_{Name}.hpp\"\n");
 
             foreach (var Child in Children)
             {
-
+                Console.WriteLine(Child.GetFullName());
             }
         }
 
@@ -49,22 +36,22 @@ namespace FortniteSDKGenerator
 
             File.Create("SDK.hpp").Close();
 
-            var Packages = new Dictionary<IntPtr, List<IntPtr>>();
+            var Packages = new Dictionary<UObject, List<UObject>>();
 
-            foreach (var Object in (List<IntPtr>)GObjects)
+            foreach (var Object in (List<UObject>)GObjects)
             {
-                IntPtr Package = Object;
+                UObject Package = Object;
 
                 while (true)
                 {
-                    var TempOuter = Memory.Read<IntPtr>((UInt64)Package + 0x20);
-                    if (TempOuter == IntPtr.Zero)
+                    var TempOuter = Package.Outer;
+                    if (TempOuter.Address == 0)
                         break;
                     Package = TempOuter;
                 }
 
                 if (!Packages.Keys.Contains(Package))
-                    Packages.Add(Package, new List<IntPtr>());
+                    Packages.Add(Package, new List<UObject>());
                 Packages[Package].Add(Object);
             }
 

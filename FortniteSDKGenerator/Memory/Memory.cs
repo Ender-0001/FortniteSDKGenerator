@@ -113,7 +113,7 @@ namespace FortniteSDKGenerator
 
             if (type.IsAssignableTo(typeof(MemoryObject)))
             {
-                return (T)(Object)Activator.CreateInstance(type, Address);
+                return (T)(Object)Activator.CreateInstance(type, Read<UInt64>(Address));
             }
 
             var Buffer = ReadMemory(Address, Marshal.SizeOf<T>());

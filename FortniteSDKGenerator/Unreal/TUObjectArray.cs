@@ -15,18 +15,18 @@ namespace FortniteSDKGenerator
         public Int32 MaxElements => Read<Int32>(8);
         public Int32 NumElements => Read<Int32>(12);
 
-        static List<IntPtr> CachedList;
+        static List<UObject> CachedList;
 
         public void Initialize()
         {
-            var List = new List<IntPtr>();
+            var List = new List<UObject>();
             for (int i = 0; i < NumElements; i++)
                 List.Add(GetByIndex(i));
 
             CachedList = List;
         }
 
-        public static implicit operator List<IntPtr>(TUObjectArray GObjects)
+        public static implicit operator List<UObject>(TUObjectArray GObjects)
         {
             if (CachedList != null)
                 return CachedList;
@@ -35,9 +35,9 @@ namespace FortniteSDKGenerator
             return CachedList;
         }
 
-        public IntPtr GetByIndex(int Index)
+        public UObject GetByIndex(int Index)
         {
-            return Memory.Read<IntPtr>((UInt64)Objects + (UInt64)(Index * 24));
+            return Memory.Read<UObject>((UInt64)Objects + (UInt64)(Index * 24));
         }
     }
 }

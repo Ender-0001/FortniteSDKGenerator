@@ -11,7 +11,6 @@ namespace FortniteSDKGenerator
     {
         public UObject(ulong InAddress) : base(InAddress)
         {
-            Console.WriteLine(InAddress);
             Name = new FName(Address + 24);
         }
 
@@ -29,7 +28,7 @@ namespace FortniteSDKGenerator
         public int ObjectFlags => Read<Int32>(8);
         public int InternalIndex => Read<Int32>(12);
         public UObject Class => Read<UObject>(16);
-        private FName Name { get; set; }
+        public FName Name { get; set; }
         public UObject Outer => Read<UObject>(0x20);
 
         public String GetName()
