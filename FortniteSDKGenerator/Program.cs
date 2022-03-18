@@ -19,7 +19,6 @@ namespace FortniteSDKGenerator
                 .CreateLogger();
 
             Log.Information("Initializing Dumper...");
-            Memory.Initialize("FortniteClient-Win64-Shipping");
 
             var GObjectsAddr = Memory.GetBaseAddress() + 0x678E010;
             var GNamesAddr = Memory.Read<UInt64>(Memory.GetBaseAddress() + 0x6785448);

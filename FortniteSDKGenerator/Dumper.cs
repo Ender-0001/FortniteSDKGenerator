@@ -13,13 +13,13 @@ namespace FortniteSDKGenerator
         public static void ProcessPackage(UObject Package, List<UObject> Children)
         {
             var Name = Package.GetName();
-            Log.Information("Dumping Package {PackageName}", Name.Split('/')[Name.Split('/').Length - 1]);
+            Log.Information("Dumping Package {PackageName}", Name);
 
             File.AppendAllText("SDK.hpp", $"#include \"SDK/FN_{Name}.hpp\"\n");
 
             foreach (var Child in Children)
             {
-                Console.WriteLine(Child.GetFullName());
+                
             }
         }
 
@@ -36,7 +36,9 @@ namespace FortniteSDKGenerator
 
             File.Create("SDK.hpp").Close();
 
-            var Packages = new Dictionary<UObject, List<UObject>>();
+            Log.Information("Building Packages...");
+
+            var Packages = new Dictionary<UInt64, List<UObject>>();
 
             foreach (var Object in (List<UObject>)GObjects)
             {
@@ -50,9 +52,9 @@ namespace FortniteSDKGenerator
                     Package = TempOuter;
                 }
 
-                if (!Packages.Keys.Contains(Package))
-                    Packages.Add(Package, new List<UObject>());
-                Packages[Package].Add(Object);
+                if (!Packages.ContainsKey(Package.Address))
+                    Packages.Add(Package.Address, new List<UObject>());
+                Packages[Package.Address].Add(Object);
             }
 
             foreach (var Package in Packages)
