@@ -49,5 +49,26 @@ namespace FortniteSDKGenerator
             Res = Class.GetName() + ' ' + Res + GetName();
             return Res;
         }
+
+        public bool IsA(string ClassName)
+        {
+            for (var Super = (UStruct)Class; Super.Address != 0; Super = Super.Super)
+            {
+                var Name = Super.GetName();
+
+                if (Name == ClassName)
+                    return true;
+
+                if (Name.Contains("CoreUObject"))
+                    return false;
+            }
+
+            return false;
+        }
+
+        public T Cast<T>() where T : UObject, new()
+        {
+            return (T)Activator.CreateInstance(typeof(T), Address);
+        }
     }
 }
