@@ -11,7 +11,6 @@ namespace FortniteSDKGenerator
     {
         public UObject(ulong InAddress) : base(InAddress)
         {
-            Name = new FName(Address + 24);
         }
 
         public static implicit operator UObject(UInt64 Address)
@@ -27,8 +26,8 @@ namespace FortniteSDKGenerator
         public IntPtr VTable => Read<IntPtr>(0);
         public int ObjectFlags => Read<Int32>(8);
         public int InternalIndex => Read<Int32>(12);
-        public UObject Class => Read<UObject>(16);
-        public FName Name { get; set; }
+        public UClass Class => Read<UClass>(16);
+        public FName Name => new FName(Address + 24);
         public UObject Outer => Read<UObject>(0x20);
 
         public String GetName()

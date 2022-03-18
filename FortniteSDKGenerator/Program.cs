@@ -27,9 +27,6 @@ namespace FortniteSDKGenerator
 
             Dumper.Initialize(GObjects, GNames);
 
-            foreach (var Obj in (List<UObject>)GObjects) //Cache all object names into GName Cache
-                Obj.GetName();
-
             Log.Information("Dumper Initialized...");
 
             Dumper.Dump();
