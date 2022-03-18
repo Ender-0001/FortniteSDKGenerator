@@ -19,5 +19,10 @@ namespace FortniteSDKGenerator
         {
             return Memory.Read<T>(Address + Offset);
         }
+
+        public void Write<T>(UInt64 Offset, T Value)
+        {
+            Memory.Write<T>(Address + Offset, Value);
+        }
     }
 }

@@ -93,8 +93,10 @@ namespace FortniteSDKGenerator
 
         public static int StringReadLen = 1024;
 
-        public static T Read<T>(UInt64 Address)
+        public static T Read<T>(UInt64 Address, int Off = 0)
         {
+            Address += (UInt64)Off;
+
             var type = typeof(T);
 
             if (type == typeof(String))
@@ -133,6 +135,20 @@ namespace FortniteSDKGenerator
         public static bool WriteMemory(UInt64 Address, byte[] Value)
         {
             return WriteProcessMemory(HandleInternal, Address, Value, Value.Length, out uint BytesWritten);
+        }
+
+        public static void Write<T>(UInt64 Address, T Value, int Off = 0)
+        {
+            Address += (UInt64)Off;
+
+            var objSize = Marshal.SizeOf(Value);
+            var objBytes = new Byte[objSize];
+            var objPtr = Marshal.AllocHGlobal(objSize);
+            Marshal.StructureToPtr(Value, objPtr, true);
+            Marshal.Copy(objPtr, objBytes, 0, objSize);
+            Marshal.FreeHGlobal(objPtr);
+
+            WriteMemory(Address, objBytes);
         }
     }
 }

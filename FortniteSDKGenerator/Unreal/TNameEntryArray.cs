@@ -12,7 +12,7 @@ namespace FortniteSDKGenerator
         {
             Chunks = new UInt64[ChunkTableSize];
             for (int i = 0; i < ChunkTableSize; i++)
-                Chunks[i] = Memory.Read<UInt64>(InAddress + (UInt64)(i * 8));
+                Chunks[i] = Memory.Read<UInt64>(InAddress, i * 8);
         }
 
         public int Num() => ElementCount;
@@ -28,7 +28,7 @@ namespace FortniteSDKGenerator
             Int32 WithinChunkIndex = Index % ElementsPerChunk;
 
             var Chunk = Chunks[ChunkIndex];
-            return new FNameEntry(Memory.Read<UInt64>(Chunk + (UInt64)WithinChunkIndex * 8));
+            return new FNameEntry(Memory.Read<UInt64>(Chunk, WithinChunkIndex * 8));
         }
 
         static readonly int MaxTotalElements = 2 * 1024 * 1024;
