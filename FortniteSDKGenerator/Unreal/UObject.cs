@@ -50,6 +50,12 @@ namespace FortniteSDKGenerator
             return Res;
         }
 
+        public string GetSplitName()
+        {
+            var SplitName = GetName().Split('/');
+            return SplitName[SplitName.Length - 1];
+        }
+
         public bool IsA(string ClassName)
         {
             for (var Super = (UStruct)Class; Super.Address != 0; Super = Super.Super)

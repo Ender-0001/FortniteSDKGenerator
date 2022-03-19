@@ -12,10 +12,8 @@ namespace FortniteSDKGenerator
     {
         public static void ProcessPackage(UObject Package, List<UObject> Children)
         {
-            var Name = Package.GetName();
+            var Name = Package.GetSplitName();
             Log.Information("Dumping Package {PackageName}", Name);
-
-            File.AppendAllText("SDK.hpp", $"#include \"SDK/FN_{Name}.hpp\"\n");
 
             foreach (var Child in Children)
             {
@@ -31,11 +29,6 @@ namespace FortniteSDKGenerator
 
         public static void Dump()
         {
-            if (File.Exists("SDK.hpp"))
-                File.Delete("SDK.hpp");
-
-            File.Create("SDK.hpp").Close();
-
             Log.Information("Building Packages...");
 
             var Packages = new Dictionary<UInt64, List<UObject>>();
