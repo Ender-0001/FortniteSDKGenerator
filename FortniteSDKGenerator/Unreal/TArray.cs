@@ -22,15 +22,18 @@ namespace FortniteSDKGenerator
         public Int32 Max => Read<Int32>(12);
         public UInt64 ArrayData => Read<UInt64>(0);
 
-        public T GetByIndex(int index)
+        public T this[int Index]
         {
-            if (Ptr)
+            get
             {
-                return (T)Activator.CreateInstance(typeof(T), Memory.Read<UInt64>(ArrayData, (8 * index)));
-            }
-            else
-            {
-                return (T)Activator.CreateInstance(typeof(T), Memory.Read<UInt64>(ArrayData, (Size * index)));
+                if (Ptr)
+                {
+                    return (T)Activator.CreateInstance(typeof(T), Memory.Read<UInt64>(ArrayData, (8 * Index)));
+                }
+                else
+                {
+                    return (T)Activator.CreateInstance(typeof(T), ArrayData, (Size * Index));
+                }
             }
         }
 

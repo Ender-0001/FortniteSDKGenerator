@@ -24,5 +24,15 @@ namespace FortniteSDKGenerator
         {
             Memory.Write<T>(Address + Offset, Value);
         }
+
+        public static bool operator ==(MemoryObject obj, MemoryObject obj2)
+        {
+            return obj.Address == obj2.Address;
+        }
+
+        public static bool operator !=(MemoryObject obj, MemoryObject obj2)
+        {
+            return obj.Address != obj2.Address;
+        }
     }
 }
