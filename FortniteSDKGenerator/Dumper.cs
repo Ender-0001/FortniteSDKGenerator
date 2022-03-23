@@ -24,9 +24,16 @@ namespace FortniteSDKGenerator
             {
                 if (Child.IsA("Class"))
                 {
+                    var Properties = Children.FindAll(delegate (UObject obj) { return obj.Read<UInt64>(0x20) == Child.Address; } );
+
                     PackageFile.Append("class ");
                     PackageFile.AppendLine(Child.GetName());
-                    PackageFile.Append("{");
+                    PackageFile.Append("{\n");
+
+                    foreach (var Property in Properties)
+                    {
+                        PackageFile.AppendLine(Property.GetName());
+                    }
 
                     PackageFile.AppendLine("}\n");
                 }
