@@ -50,6 +50,11 @@ namespace FortniteSDKGenerator
             return Res;
         }
 
+        public bool IsValid()
+        {
+            return Address != 0;
+        }
+
         public string GetSplitName()
         {
             var SplitName = GetName().Split('/');
@@ -58,11 +63,11 @@ namespace FortniteSDKGenerator
 
         public bool IsA(string ClassName)
         {
-            for (var Super = (UStruct)Class; Super.Address != 0; Super = Super.Super)
+            for (var Super = (UStruct)Class; Super.IsValid(); Super = Super.Super)
             {
                 var Name = Super.GetName();
 
-                if (Name == ClassName)
+                if (Name.Contains(ClassName))
                     return true;
 
                 if (Name.Contains("CoreUObject"))
@@ -72,7 +77,21 @@ namespace FortniteSDKGenerator
             return false;
         }
 
-        public T Cast<T>() where T : UObject, new()
+        public T GetMember<T>(string Name)
+        {
+            for (var Super = (UStruct)Class; Super.IsValid(); Super = Super.Super) // For example only use casts if type is a parent of that class
+            {
+                for (var Next = Super.Children; Next.IsValid(); Next = Next.Next)
+                {
+                    if (Next.GetName() == Name)
+                        return Read<T>(Next.Cast<UProperty>().Offset);
+                }
+            }
+
+            return default(T);
+        }
+
+        public T Cast<T>() where T : UObject
         {
             return (T)Activator.CreateInstance(typeof(T), Address);
         }

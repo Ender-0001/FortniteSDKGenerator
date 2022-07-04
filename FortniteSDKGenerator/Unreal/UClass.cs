@@ -11,5 +11,6 @@ namespace FortniteSDKGenerator
         public UClass(ulong InAddress) : base(InAddress)
         {
         }
+
     }
 }

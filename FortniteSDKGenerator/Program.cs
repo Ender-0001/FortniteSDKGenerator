@@ -2,6 +2,7 @@
 using System.Text;
 using FortniteSDKGenerator;
 using Serilog;
+using SDK;
 
 namespace FortniteSDKGenerator
 {

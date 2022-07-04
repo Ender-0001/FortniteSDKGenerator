@@ -10,36 +10,88 @@ namespace FortniteSDKGenerator
 {
     class Dumper
     {
-        public static void ProcessPackage(UObject Package, List<UObject> Children)
+        static string GetSpacing(int Idx)
         {
-            var Name = Package.GetSplitName();
-            Log.Information("Dumping Package {PackageName}", Name);
+            string Spacing = "";
+
+            for (int i = 0; i != Idx; i++)    
+                Spacing += "    ";           
+
+            return Spacing;
+        }
+
+        public static void ProcessPackage(UObject Package, List<UClass> Classes)
+        {
+            if (Classes.Count == 0)
+                return; // Dont dump empty packages
+
+            var PackageName = Package.GetSplitName();
+            Log.Information("Dumping Package {PackageName}", PackageName);
 
             var PackageFile = new StringBuilder();
             PackageFile.AppendLine("using System;");
             PackageFile.AppendLine("using FortniteSDKGenerator;\n");
             PackageFile.AppendLine("namespace SDK;\n");
 
-            foreach (var Child in Children)
+            foreach (var Class in Classes)
             {
-                if (Child.IsA("Class"))
+                if (Class.GetName().Contains("Default__"))
+                    continue;
+
+                if (Class.IsA("Class"))
                 {
-                    var Properties = Children.FindAll(delegate (UObject obj) { return obj.Read<UInt64>(0x20) == Child.Address; } );
+                    var Super = Class.Super;
 
-                    PackageFile.Append("class ");
-                    PackageFile.AppendLine(Child.GetName());
-                    PackageFile.Append("{\n");
-
-                    foreach (var Property in Properties)
+                    if (Super.IsValid())
                     {
-                        PackageFile.AppendLine(Property.GetName());
+                        var SuperName = Super.GetTypeName();
+
+                        if (SuperName == "None")
+                            continue;
+
+                        PackageFile.Append("class ");
+                        PackageFile.AppendLine(Class.GetPrefix() + Class.GetName() + " : " + SuperName);
+                    }
+                    else
+                    {
+                        PackageFile.Append("class ");
+                        PackageFile.AppendLine(Class.GetPrefix() + Class.GetName());
+                    }
+
+                    PackageFile.AppendLine("{");
+
+                    PackageFile.Append('\n' + GetSpacing(1) + $"public {Class.GetPrefix() + Class.GetName()}(ulong InAddress) : base(InAddress)");
+                    PackageFile.AppendLine(" {}\n");
+
+                    for (var Next = Class.Children; Next.IsValid(); Next = Next.Next)
+                    {
+                        if (Next.IsA("Property"))
+                        {
+                            var TypeName = Next.GetTypeName();
+
+                            if (TypeName == "None")
+                                continue;
+
+                            var Name = Next.GetName();
+
+                            PackageFile.Append(GetSpacing(1));
+                            PackageFile.Append("public ");
+                            PackageFile.Append(TypeName);
+                            PackageFile.Append(' ');
+                            PackageFile.Append(Name);
+                            PackageFile.Append(" => GetMember<");
+                            PackageFile.Append(TypeName);
+                            PackageFile.Append(">(\"");
+                            PackageFile.Append(Name);
+                            PackageFile.AppendLine("\");");
+                        }
                     }
 
                     PackageFile.AppendLine("}\n");
                 }
             }
 
-            File.WriteAllText($".\\SDK\\{Name}.cs", PackageFile.ToString());
+            File.WriteAllText($".\\SDK\\{PackageName}.cs", PackageFile.ToString());
         }
 
         public static void Initialize(TUObjectArray InGObjects, TNameEntryArray InGNames)
@@ -56,10 +108,11 @@ namespace FortniteSDKGenerator
                 Directory.Delete(".\\SDK");
             Directory.CreateDirectory(".\\SDK");
 
-            var Packages = new Dictionary<UInt64, List<UObject>>();
+            var Packages = new Dictionary<UInt64, List<UClass>>();
 
-            foreach (var Object in (List<UObject>)GObjects)
+            for (int i = 0; i < GObjects.NumElements; i++)
             {
+                var Object = GObjects.GetByIndex(i);
                 UObject Package = Object;
 
                 while (true)
@@ -71,8 +124,8 @@ namespace FortniteSDKGenerator
                 }
 
                 if (!Packages.ContainsKey(Package.Address))
-                    Packages.Add(Package.Address, new List<UObject>());
-                Packages[Package.Address].Add(Object);
+                    Packages.Add(Package.Address, new List<UClass>());
+                Packages[Package.Address].Add(Object.Cast<UClass>());
             }
 
             foreach (var Package in Packages)
